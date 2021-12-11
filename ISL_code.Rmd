@@ -1,0 +1,103 @@
+---
+title: "Introduction to Statistical Learning_Codes"
+author: "Yifei Cao"
+date: "12/11/2021"
+output: 
+  html_document:
+    number_sections: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Chapter 4 _Classification_
+
+## Lab: Logistic Regression, LDA, QDA, and KNN
+
+### Logistic Regression
+
+First, using **glm()** with the argument **family=binomial**, we could tell R to run a logistic regression.
+```{r, warning=FALSE,message=FALSE}
+library(ISLR)
+attach(Smarket)
+
+glm_fit = glm(Direction ~ Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + Volume,
+              data = Smarket, family = binomial) # family = binomial tells glm to run a logistic regression
+summary(glm_fit)
+
+```
+
+Regarding the high p values (the smallest p is in Lag 1 and is 0.15), there is no evidence that Lag 1 is directly related to Direction
+
+Therefore, we use the **coef()** functioin in order to access just the coefficients for this fitted model, and use **summary()** to access particular aspects of the model.
+
+```{r, message=FALSE}
+coef(glm_fit)
+```
+```{r, message=FALSE}
+summary(glm_fit)$coef
+```
+
+The **predict()** function can be used to predict the probability that the market will go up, given values of the predictors. 
+```{r}
+glm_probs = predict(glm_fit, type = "response")
+glm_pred = rep("Down", 1250) # a vector of 1250 Down elements
+glm_pred[glm_probs > 0.5] = "Up"
+table(glm_pred, Direction)
+```
+
+The diagonal elements of the confusion matrix indicate correct predictions, while the off-diagonals represent incorrect predictions. The **mean()** functon can be used to compute the fraction of days for which the prediction was correct.
+
+```{r}
+mean(glm_pred == Direction)
+```
+
+Problems of this model is that we are using the same data sample to do both training and testing! So it is not appropriatem and cannot reflect the real preiction ability of the present model. Hence we select data from year 2001 to 2004 as training set, and year 2005 to be test set, to see how the model works.
+
+```{r}
+train = (Year<2005)
+Smarket_2005 = Smarket[!train,]
+Direction_2005 = Direction[!train]
+#fit the logistic regression model using the training set
+glm_fit = glm(Direction ~ Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + Volume,
+              data = Smarket, family = binomial, subset = train) # subset to subtract training set
+glm_probs = predict(glm_fit, Smarket_2005, type = "response")
+
+glm_pred = rep("Down", 252) #generate a vector for test set
+glm_pred[glm_probs > 0.5] = "Up"
+table(glm_pred, Direction_2005) #
+```
+```{r}
+mean(glm_pred == Direction_2005)
+```
+
+This model looks worse than chance level!! What if we select those predictors that only have relatively lower p values and run the model again?
+
+```{r}
+train = (Year<2005)
+Smarket_2005 = Smarket[!train,]
+Direction_2005 = Direction[!train]
+#fit the logistic regression model using the training set
+glm_fit = glm(Direction ~ Lag1 + Lag2,
+              data = Smarket, family = binomial, subset = train) # subset to subtract training set
+glm_probs = predict(glm_fit, Smarket_2005, type = "response")
+
+glm_pred = rep("Down", 252) #generate a vector for test set
+glm_pred[glm_probs > 0.5] = "Up"
+table(glm_pred, Direction_2005) #
+```
+```{r}
+mean(glm_pred == Direction_2005)
+```
+
+### _Linear Discrininant Analysis_
+
+Now, we are going to perform LDA on the **Smarket** data. In R, we fit a LDA model using the **lda()** function, which is part of the MASS library.
+
+```{r}
+library(MASS)
+lda_fit = lda(Direction ~ Lag1 + Lag2, data = Smarket, subset = train)
+lda_pred = predict
+```
+
