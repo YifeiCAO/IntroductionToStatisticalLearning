@@ -97,7 +97,56 @@ Now, we are going to perform LDA on the **Smarket** data. In R, we fit a LDA mod
 
 ```{r}
 library(MASS)
+library(ISLR)
 lda_fit = lda(Direction ~ Lag1 + Lag2, data = Smarket, subset = train)
-lda_pred = predict
+lda_pred = predict(lda_fit, Smarket_2005)
+
+lda_class = lda_pred$class
+table(lda_class, Direction_2005)
 ```
+```{r}
+mean(lda_class == Direction_2005)
+```
+
+### _Quadratic Discriminant Analysis_
+
+QDA is implemented in R using the **qda()** function,which is also part of the MASS library.
+
+```{r}
+qda_fit = qda(Direction ~ Lag1 + Lag2, data = Smarket, subset = train)
+qda_class = predict(qda_fit, Smarket_2005)$class
+table(qda_class, Direction_2005)
+```
+
+```{r}
+mean(qda_class == Direction_2005)
+```
+
+The accuracy of QDA in this data sample is almost 60%!
+
+### _K-Nearest Neighbors_
+
+Now perform KNN using the knn() function, which is part of the class library. Unlike previous models, knn() forms predictions using a single command, and requires 4 inputs: (1) train.X, (2) test.X, (3) train.Y, (4) value for **K**, the number of nearest neighbors to be used by classifier.
+
+First, modifying the data sample to the form of KNN uses.
+```{r}
+library(class)
+# extracting the features used for KNN from the raw data
+train_X = cbind(Lag1, Lag2)[train,]
+test_X = cbind(Lag1, Lag2)[!train,]
+train_Direction = Direction[train]
+# ensure reproducibility of results, set random seeds
+set.seed(1234)
+knn_pred = knn(train_X, test_X, train_Direction, k = 1)
+table(knn_pred, Direction_2005)
+mean(knn_pred == Direction_2005)
+```
+
+### _An Application to Caravan Insurance Data_
+
+This time we will apply KNN approach to the **Caravan** dataset. This data set contains 85 predictors, 5882 observations, and Purchase as variable (only 6% of people purchased caravan insurance).
+
+In KNN, an annoying thing is that distance for $1000 in salary and difference for 50 years in age could be different, and this kind of difference could be also affected by the units they use. Therefore, we need to _standardize_ the data so that all variables are given a mean of zero and a sd of 1. The **scale()** function does this.
+
+
 
