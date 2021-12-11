@@ -148,5 +148,19 @@ This time we will apply KNN approach to the **Caravan** dataset. This data set c
 
 In KNN, an annoying thing is that distance for $1000 in salary and difference for 50 years in age could be different, and this kind of difference could be also affected by the units they use. Therefore, we need to _standardize_ the data so that all variables are given a mean of zero and a sd of 1. The **scale()** function does this.
 
+```{r, message=FALSE, warning=FALSE}
+attach(Caravan)
+stdz_X = scale(Caravan[,-86]) # standardized data set of Caravan, now every column is mean = 0, sd = 1
 
+# now split the observations into a test set, containing the first 1000 observations, and training set with the remainings
+test = 1:1000
+train_X = stdz_X[-test,]
+test_X = stdz_X[test,]
+train_Y = Purchase[-test]
+test_Y = Purchase[test]
+set.seed(1234)
+knn_pred = knn(train_X, test_X, train_Y, k = 1)
+mean(test_Y != knn_pred)
+```
 
+## Exercises

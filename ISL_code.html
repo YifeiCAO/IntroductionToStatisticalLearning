@@ -331,7 +331,23 @@ table(knn_pred, Direction_2005)</code></pre>
 <h3><span class="header-section-number">1.1.5</span> <em>An Application to Caravan Insurance Data</em></h3>
 <p>This time we will apply KNN approach to the <strong>Caravan</strong> dataset. This data set contains 85 predictors, 5882 observations, and Purchase as variable (only 6% of people purchased caravan insurance).</p>
 <p>In KNN, an annoying thing is that distance for $1000 in salary and difference for 50 years in age could be different, and this kind of difference could be also affected by the units they use. Therefore, we need to <em>standardize</em> the data so that all variables are given a mean of zero and a sd of 1. The <strong>scale()</strong> function does this.</p>
+<pre class="r"><code>attach(Caravan)
+stdz_X = scale(Caravan[,-86]) # standardized data set of Caravan, now every column is mean = 0, sd = 1
+
+# now split the observations into a test set, containing the first 1000 observations, and training set with the remainings
+test = 1:1000
+train_X = stdz_X[-test,]
+test_X = stdz_X[test,]
+train_Y = Purchase[-test]
+test_Y = Purchase[test]
+set.seed(1234)
+knn_pred = knn(train_X, test_X, train_Y, k = 1)
+mean(test_Y != knn_pred)</code></pre>
+<pre><code>## [1] 0.116</code></pre>
 </div>
+</div>
+<div id="exercises" class="section level2" number="1.2">
+<h2><span class="header-section-number">1.2</span> Exercises</h2>
 </div>
 </div>
 
